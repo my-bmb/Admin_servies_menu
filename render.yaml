@@ -3,6 +3,7 @@ services:
     name: admin-bitebuddy
     env: python
     buildCommand: |
+      pip install --upgrade pip setuptools wheel
       pip install -r requirements.txt
       echo "📦 Packages installed successfully!"
     startCommand: |
@@ -27,7 +28,7 @@ services:
       - key: CLOUDINARY_API_SECRET
         sync: false
       - key: PYTHON_VERSION
-        value: 3.9.0
+        value: 3.13.4  # ✅ Updated to Python 3.13.4
 
 databases:
   - name: admin-db
