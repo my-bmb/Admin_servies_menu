@@ -3,13 +3,17 @@ services:
     name: admin-bitebuddy
     env: python
     buildCommand: |
-      pip install --upgrade pip setuptools wheel
+      pip install --upgrade pip
       pip install -r requirements.txt
-      echo "📦 Packages installed successfully!"
+      echo "✅ Packages installed successfully!"
     startCommand: |
-      echo "🚀 Starting Admin Dashboard with database migration..."
-      python -c "from app import init_database; init_database()"
-      gunicorn app:app
+      echo "🚀 Starting Admin Dashboard..."
+      python -c "
+      from app import init_database
+      init_database()
+      print('✅ Database initialized!')
+      "
+      gunicorn --bind 0.0.0.0:$PORT app:app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
@@ -22,14 +26,10 @@ services:
       - key: ADMIN_PASSWORD
         value: admin123
       - key: CLOUDINARY_CLOUD_NAME
-        sync: false
+        value: your-cloud-name
       - key: CLOUDINARY_API_KEY
-        sync: false
+        value: your-api-key
       - key: CLOUDINARY_API_SECRET
-        sync: false
+        value: your-api-secret
       - key: PYTHON_VERSION
-        value: 3.13.4  # ✅ Updated to Python 3.13.4
-
-databases:
-  - name: admin-db
-    plan: free
+        value: 3.11.0  # Use stable version
