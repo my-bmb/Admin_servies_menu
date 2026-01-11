@@ -4,3 +4,4 @@ SQLAlchemy>=2.0.16
 psycopg[binary]
 gunicorn
 python-dotenv
+cloudinary
