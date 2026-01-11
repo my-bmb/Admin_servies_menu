@@ -1,0 +1,163 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Positions{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12 mb-4">
+        <h1><i class="bi bi-arrows-move"></i> Manage Positions</h1>
+        <p class="text-muted">Drag and drop to reorder items. Changes are saved automatically.</p>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-briefcase"></i> Services</h5>
+            </div>
+            <div class="card-body">
+                <ul id="services-list" class="list-group sortable-list">
+                    {% for service in services %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center" 
+                        data-id="{{ service.id }}" data-position="{{ service.position }}">
+                        <div>
+                            <strong>{{ service.name }}</strong>
+                            <br>
+                            <small class="text-muted">Position: {{ service.position }}</small>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary move-up" title="Move Up">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary move-down" title="Move Down">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-card-checklist"></i> Menu Items</h5>
+            </div>
+            <div class="card-body">
+                <ul id="menu-list" class="list-group sortable-list">
+                    {% for item in menu_items %}
+                    <li class="list-group-item d-flex justify-content-between align-items-center" 
+                        data-id="{{ item.id }}" data-position="{{ item.position }}">
+                        <div>
+                            <strong>{{ item.name }}</strong>
+                            <br>
+                            <small class="text-muted">Position: {{ item.position }}</small>
+                        </div>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary move-up" title="Move Up">
+                                <i class="bi bi-arrow-up"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-primary move-down" title="Move Down">
+                                <i class="bi bi-arrow-down"></i>
+                            </button>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i> 
+            <strong>Note:</strong> Position changes are reflected in the customer website automatically.
+            Active items are displayed in the order defined here.
+        </div>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    // Move Up functionality
+    $('.move-up').click(function() {
+        const listItem = $(this).closest('li');
+        const prevItem = listItem.prev();
+        
+        if (prevItem.length) {
+            listItem.insertBefore(prevItem);
+            updatePositions(listItem.closest('ul'));
+        }
+    });
+    
+    // Move Down functionality
+    $('.move-down').click(function() {
+        const listItem = $(this).closest('li');
+        const nextItem = listItem.next();
+        
+        if (nextItem.length) {
+            listItem.insertAfter(nextItem);
+            updatePositions(listItem.closest('ul'));
+        }
+    });
+    
+    function updatePositions(listElement) {
+        const items = listElement.find('li');
+        const isServices = listElement.attr('id') === 'services-list';
+        const updateUrl = isServices ? '/admin/services/update-position' : '/admin/menu/update-position';
+        
+        items.each(function(index) {
+            const itemId = $(this).data('id');
+            const newPosition = index + 1;
+            
+            // Update position display
+            $(this).find('.text-muted').text('Position: ' + newPosition);
+            $(this).data('position', newPosition);
+            
+            // Send AJAX request to update position in database
+            $.ajax({
+                url: updateUrl,
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({
+                    id: itemId,
+                    position: newPosition
+                }),
+                success: function(response) {
+                    if (!response.success) {
+                        console.error('Error updating position:', response.error);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error updating position:', error);
+                }
+            });
+        });
+    }
+});
+</script>
+
+<style>
+.sortable-list {
+    min-height: 100px;
+}
+
+.list-group-item {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.list-group-item:hover {
+    background-color: #f8f9fa;
+}
+
+.btn-group .btn {
+    margin-left: 5px;
+}
+</style>
+{% endblock %}

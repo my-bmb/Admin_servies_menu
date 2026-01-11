@@ -1,0 +1,129 @@
+{% extends "admin/base.html" %}
+
+{% block title %}Manage Menu{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-card-checklist"></i> Menu Items</h1>
+        <p class="text-muted">Manage your menu offerings</p>
+    </div>
+    <a href="{{ url_for('add_menu') }}" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Add Menu Item
+    </a>
+</div>
+
+<!-- Search and Filter -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="GET" action="{{ url_for('menu') }}" class="row g-3">
+            <div class="col-md-6">
+                <input type="text" class="form-control" name="search" 
+                       placeholder="Search menu items..." value="{{ search }}">
+            </div>
+            <div class="col-md-4">
+                <select class="form-select" name="status">
+                    <option value="">All Status</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active</option>
+                    <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <button type="submit" class="btn btn-outline-primary w-100">
+                    <i class="bi bi-search"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        {% if menu_items %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead>
+                    <tr>
+                        <th width="50">#</th>
+                        <th>Image</th>
+                        <th>Name</th>
+                        <th>Price</th>
+                        <th>Status</th>
+                        <th>Position</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in menu_items %}
+                    <tr>
+                        <td>{{ item.id }}</td>
+                        <td>
+                            {% if item.photo %}
+                            <img src="{{ item.photo }}" alt="{{ item.name }}" 
+                                 style="width: 60px; height: 60px; object-fit: cover; border-radius: 5px;">
+                            {% else %}
+                            <span class="badge bg-secondary">No Image</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <strong>{{ item.name }}</strong>
+                            {% if item.description %}
+                            <br><small class="text-muted">{{ item.description[:50] }}...</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-success">₹{{ "%.2f"|format(item.price) }}</span>
+                            {% if item.discount > 0 %}
+                            <br>
+                            <small class="text-danger">-{{ "%.1f"|format(item.discount) }}%</small>
+                            <br>
+                            <small class="text-success">Final: ₹{{ "%.2f"|format(item.final_price) }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if item.status == 'active' else 'secondary' }}">
+                                {{ item.status|title }}
+                            </span>
+                        </td>
+                        <td>
+                            <span class="badge bg-info">{{ item.position }}</span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm">
+                                <a href="{{ url_for('edit_menu', id=item.id) }}" 
+                                   class="btn btn-warning" title="Edit">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a href="{{ url_for('toggle_menu_status', id=item.id) }}" 
+                                   class="btn btn-{{ 'secondary' if item.status == 'active' else 'success' }}" 
+                                   title="{{ 'Deactivate' if item.status == 'active' else 'Activate' }}">
+                                    <i class="bi bi-power"></i>
+                                </a>
+                                <form action="{{ url_for('delete_menu', id=item.id) }}" 
+                                      method="POST" class="d-inline">
+                                    <button type="submit" class="btn btn-danger" 
+                                            onclick="return confirm('Delete {{ item.name }}? This cannot be undone!')" 
+                                            title="Delete">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="text-center py-5">
+            <i class="bi bi-card-checklist display-1 text-muted"></i>
+            <h4 class="mt-3">No menu items found</h4>
+            <p class="text-muted">Add your first menu item to get started</p>
+            <a href="{{ url_for('add_menu') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Add Menu Item
+            </a>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

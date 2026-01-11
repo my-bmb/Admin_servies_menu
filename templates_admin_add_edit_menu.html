@@ -1,0 +1,96 @@
+{% extends "admin/base.html" %}
+
+{% block title %}{{ 'Edit' if menu_item else 'Add' }} Menu Item{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h2><i class="bi bi-{{ 'pencil' if menu_item else 'plus' }}"></i> {{ 'Edit' if menu_item else 'Add' }} Menu Item</h2>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Item Name *</label>
+                        <input type="text" class="form-control" id="name" name="name" 
+                               value="{{ menu_item.name if menu_item }}" required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="photo" class="form-label">Item Image</label>
+                        <input type="file" class="form-control" id="photo" name="photo" accept="image/*">
+                        {% if menu_item and menu_item.photo %}
+                        <div class="mt-2">
+                            <p>Current Image:</p>
+                            <img src="{{ menu_item.photo }}" alt="{{ menu_item.name }}" 
+                                 style="max-width: 200px; max-height: 150px; object-fit: cover;" 
+                                 class="img-thumbnail">
+                        </div>
+                        {% endif %}
+                        <small class="text-muted">Leave empty to keep current image</small>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="price" class="form-label">Price (₹) *</label>
+                            <input type="number" class="form-control" id="price" name="price" 
+                                   step="0.01" min="0" value="{{ "%.2f"|format(menu_item.price) if menu_item else '' }}" required>
+                        </div>
+                        
+                        <div class="col-md-6 mb-3">
+                            <label for="discount" class="form-label">Discount (%)</label>
+                            <input type="number" class="form-control" id="discount" name="discount" 
+                                   step="0.1" min="0" max="100" value="{{ "%.1f"|format(menu_item.discount) if menu_item else '0' }}">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="final_price" class="form-label">Final Price (₹)</label>
+                        <input type="text" class="form-control" id="final_price" readonly
+                               value="{{ "%.2f"|format(menu_item.final_price) if menu_item else '0.00' }}">
+                        <small class="text-muted">Calculated automatically</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3">{{ menu_item.description if menu_item }}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select class="form-select" id="status" name="status">
+                            <option value="active" {{ 'selected' if menu_item and menu_item.status == 'active' }}>Active</option>
+                            <option value="inactive" {{ 'selected' if menu_item and menu_item.status == 'inactive' }}>Inactive</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-{{ 'check' if menu_item else 'plus' }}"></i> {{ 'Update' if menu_item else 'Add' }} Menu Item
+                        </button>
+                        <a href="{{ url_for('menu') }}" class="btn btn-secondary">
+                            <i class="bi bi-x"></i> Cancel
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+function calculateFinalPrice() {
+    const price = parseFloat(document.getElementById('price').value) || 0;
+    const discount = parseFloat(document.getElementById('discount').value) || 0;
+    const finalPrice = price - (price * discount / 100);
+    document.getElementById('final_price').value = finalPrice.toFixed(2);
+}
+
+document.getElementById('price').addEventListener('input', calculateFinalPrice);
+document.getElementById('discount').addEventListener('input', calculateFinalPrice);
+
+// Calculate initial price
+calculateFinalPrice();
+</script>
+{% endblock %}
