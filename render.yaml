@@ -1,9 +1,14 @@
 services:
   - type: web
-    name: admin-dashboard
+    name: admin-bitebuddy
     env: python
-    buildCommand: pip install -r requirements.txt
-    startCommand: gunicorn app:app
+    buildCommand: |
+      pip install -r requirements.txt
+      echo "📦 Packages installed successfully!"
+    startCommand: |
+      echo "🚀 Starting Admin Dashboard with database migration..."
+      python -c "from app import init_database; init_database()"
+      gunicorn app:app
     envVars:
       - key: DATABASE_URL
         fromDatabase:
