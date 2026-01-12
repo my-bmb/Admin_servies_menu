@@ -1,7 +1,9 @@
-flask>=3.0.0
-flask-sqlalchemy>=3.1.0
-sqlalchemy>=2.0.0
-psycopg[binary]
-python-dotenv
-cloudinary
-gunicorn
+Flask==2.3.3
+psycopg[binary]==3.3.2
+Werkzeug==2.3.7
+Jinja2==3.1.2
+gunicorn==21.2.0
+python-dotenv==1.0.0
+cloudinary==1.36.0
+cryptography==41.0.7
+greenlet==3.0.0
