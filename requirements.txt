@@ -1,5 +1,5 @@
 flask>=3.0.0
-psycopg[binary]>=3.1.0
+supabase
 python-dotenv>=1.0.0
 cloudinary>=1.38.0
 gunicorn>=21.0.0
