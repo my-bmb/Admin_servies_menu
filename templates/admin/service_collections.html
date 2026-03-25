@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Services - Admin</title>
+    <title>Service Collections - Admin</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
@@ -44,9 +44,9 @@
             padding: 5px 10px;
             margin: 0 2px;
         }
-        .service-image {
-            width: 60px;
-            height: 60px;
+        .collection-image {
+            width: 50px;
+            height: 50px;
             object-fit: cover;
             border-radius: 10px;
         }
@@ -63,15 +63,6 @@
         .status-inactive {
             background: #f8d7da;
             color: #721c24;
-        }
-        .price-tag {
-            font-weight: bold;
-            color: #28a745;
-        }
-        .old-price {
-            text-decoration: line-through;
-            font-size: 12px;
-            color: #999;
         }
     </style>
 </head>
@@ -91,13 +82,13 @@
                         <div class="mt-3 mb-2">
                             <small class="text-white-50">SERVICES</small>
                         </div>
-                        <a class="nav-link" href="{{ url_for('service_collections') }}">
+                        <a class="nav-link active" href="{{ url_for('service_collections') }}">
                             <i class="fas fa-layer-group"></i> Collections
                         </a>
                         <a class="nav-link" href="{{ url_for('service_categories') }}">
                             <i class="fas fa-folder"></i> Categories
                         </a>
-                        <a class="nav-link active" href="{{ url_for('services') }}">
+                        <a class="nav-link" href="{{ url_for('services') }}">
                             <i class="fas fa-concierge-bell"></i> Services
                         </a>
                         <div class="mt-3 mb-2">
@@ -129,10 +120,10 @@
             <div class="col-md-10 main-content">
                 <nav class="navbar navbar-expand-lg navbar-light">
                     <div class="container-fluid">
-                        <span class="navbar-brand">Services</span>
+                        <span class="navbar-brand">Service Collections</span>
                         <div class="ms-auto">
-                            <a href="{{ url_for('add_service') }}" class="btn btn-primary">
-                                <i class="fas fa-plus"></i> Add New Service
+                            <a href="{{ url_for('add_service_collection') }}" class="btn btn-primary">
+                                <i class="fas fa-plus"></i> Add New Collection
                             </a>
                         </div>
                     </div>
@@ -153,33 +144,11 @@
                     <!-- Filter Section -->
                     <div class="table-card mb-4">
                         <form method="GET" class="row g-3">
-                            <div class="col-md-3">
+                            <div class="col-md-4">
                                 <label class="form-label">Search</label>
                                 <input type="text" class="form-control" name="search" value="{{ search }}" placeholder="Search by name...">
                             </div>
                             <div class="col-md-3">
-                                <label class="form-label">Collection</label>
-                                <select class="form-select" name="collection">
-                                    <option value="">All Collections</option>
-                                    {% for collection in collections %}
-                                        <option value="{{ collection.id }}" {% if collection_filter|int == collection.id %}selected{% endif %}>
-                                            {{ collection.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-2">
-                                <label class="form-label">Category</label>
-                                <select class="form-select" name="category">
-                                    <option value="">All Categories</option>
-                                    {% for category in categories %}
-                                        <option value="{{ category.id }}" {% if category_filter|int == category.id %}selected{% endif %}>
-                                            {{ category.name }}
-                                        </option>
-                                    {% endfor %}
-                                </select>
-                            </div>
-                            <div class="col-md-2">
                                 <label class="form-label">Status</label>
                                 <select class="form-select" name="status">
                                     <option value="">All</option>
@@ -187,16 +156,22 @@
                                     <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactive</option>
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label class="form-label">&nbsp;</label>
                                 <button type="submit" class="btn btn-primary d-block w-100">
                                     <i class="fas fa-filter"></i> Filter
                                 </button>
                             </div>
+                            <div class="col-md-2">
+                                <label class="form-label">&nbsp;</label>
+                                <a href="{{ url_for('service_collections') }}" class="btn btn-secondary d-block w-100">
+                                    <i class="fas fa-redo"></i> Reset
+                                </a>
+                            </div>
                         </form>
                     </div>
                     
-                    <!-- Services Table -->
+                    <!-- Collections Table -->
                     <div class="table-card">
                         <div class="table-responsive">
                             <table class="table table-hover">
@@ -204,66 +179,56 @@
                                     <tr>
                                         <th>Image</th>
                                         <th>Name</th>
-                                        <th>Collection/Category</th>
-                                        <th>Price</th>
-                                        <th>Discount</th>
-                                        <th>Final Price</th>
+                                        <th>Description</th>
+                                        <th>Categories</th>
                                         <th>Status</th>
+                                        <th>Position</th>
                                         <th>Actions</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {% for service in services %}
+                                    {% for collection in collections %}
                                     <tr>
                                         <td>
-                                            {% if service.photo %}
-                                                <img src="{{ service.photo }}" class="service-image" alt="{{ service.name }}">
+                                            {% if collection.collection_photo %}
+                                                <img src="{{ collection.collection_photo }}" class="collection-image" alt="{{ collection.name }}">
                                             {% else %}
-                                                <div class="service-image bg-secondary d-flex align-items-center justify-content-center text-white">
+                                                <div class="collection-image bg-secondary d-flex align-items-center justify-content-center text-white">
                                                     <i class="fas fa-image"></i>
                                                 </div>
                                             {% endif %}
                                         </td>
                                         <td>
-                                            <strong>{{ service.name }}</strong>
-                                            <br>
-                                            <small class="text-muted">{{ service.description[:50] }}</small>
+                                            <strong>{{ collection.name }}</strong>
+                                        </td>
+                                        <td>{{ collection.description[:50] }}{% if collection.description|length > 50 %}...{% endif %}</td>
+                                        <td>
+                                            <span class="badge bg-info">{{ collection.category_count }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-primary">{{ service.collection_name }}</span>
-                                            <br>
-                                            <span class="badge bg-info">{{ service.category_name }}</span>
-                                        </td>
-                                        <td class="price-tag">₹{{ "%.2f"|format(service.price) }}</td>
-                                        <td>
-                                            {% if service.discount > 0 %}
-                                                <span class="badge bg-danger">{{ service.discount }}% OFF</span>
-                                            {% else %}
-                                                <span class="text-muted">-</span>
-                                            {% endif %}
-                                        </td>
-                                        <td class="price-tag">₹{{ "%.2f"|format(service.final_price) }}</td>
-                                        <td>
-                                            <span class="status-badge status-{{ service.status }}">
-                                                {{ service.status|upper }}
+                                            <span class="status-badge status-{{ collection.status }}">
+                                                {{ collection.status|upper }}
                                             </span>
                                         </td>
+                                        <td>{{ collection.position }}</td>
                                         <td>
-                                            <a href="{{ url_for('edit_service', id=service.id) }}" class="btn btn-sm btn-warning btn-action">
+                                            <a href="{{ url_for('edit_service_collection', collection_id=collection.id) }}" class="btn btn-sm btn-warning btn-action">
                                                 <i class="fas fa-edit"></i>
                                             </a>
-                                            <a href="{{ url_for('toggle_service_status', id=service.id) }}" class="btn btn-sm btn-info btn-action">
-                                                <i class="fas fa-toggle-{{ 'on' if service.status == 'active' else 'off' }}"></i>
+                                            <a href="{{ url_for('toggle_service_collection_status', collection_id=collection.id) }}" class="btn btn-sm btn-info btn-action">
+                                                <i class="fas fa-toggle-{{ 'on' if collection.status == 'active' else 'off' }}"></i>
                                             </a>
-                                            <button type="button" class="btn btn-sm btn-danger btn-action" onclick="confirmDelete({{ service.id }}, '{{ service.name }}')">
+                                            <button type="button" class="btn btn-sm btn-danger btn-action" onclick="confirmDelete({{ collection.id }}, '{{ collection.name }}')">
                                                 <i class="fas fa-trash"></i>
                                             </button>
-                                            <form id="delete-form-{{ service.id }}" action="{{ url_for('delete_service', id=service.id) }}" method="POST" style="display: none;"></form>
+                                            <form id="delete-form-{{ collection.id }}" action="{{ url_for('delete_service_collection', collection_id=collection.id) }}" method="POST" style="display: none;">
+                                                <input type="hidden" name="_method" value="DELETE">
+                                            </form>
                                         </td>
                                     </tr>
                                     {% else %}
                                     <tr>
-                                        <td colspan="8" class="text-center">No services found</td>
+                                        <td colspan="7" class="text-center">No service collections found</td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>
@@ -281,7 +246,7 @@
         function confirmDelete(id, name) {
             Swal.fire({
                 title: 'Are you sure?',
-                text: `Delete service "${name}"? This action cannot be undone!`,
+                text: `Delete collection "${name}"? This action cannot be undone!`,
                 icon: 'warning',
                 showCancelButton: true,
                 confirmButtonColor: '#d33',
