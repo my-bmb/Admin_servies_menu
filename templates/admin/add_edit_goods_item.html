@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% if collection %}Edit{% else %}Add{% endif %} Service Collection - Admin Panel</title>
+    <title>{% if item %}Edit{% else %}Add{% endif %} Goods Item - Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <style>
@@ -57,7 +57,7 @@
                         <a class="nav-link" href="{{ url_for('dashboard') }}">
                             <i class="fas fa-tachometer-alt"></i> Dashboard
                         </a>
-                        <a class="nav-link active" href="{{ url_for('service_collections') }}">
+                        <a class="nav-link" href="{{ url_for('service_collections') }}">
                             <i class="fas fa-layer-group"></i> Service Collections
                         </a>
                         <a class="nav-link" href="{{ url_for('service_categories') }}">
@@ -73,7 +73,7 @@
                         <a class="nav-link" href="{{ url_for('goods_categories') }}">
                             <i class="fas fa-tags"></i> Goods Categories
                         </a>
-                        <a class="nav-link" href="{{ url_for('goods_items') }}">
+                        <a class="nav-link active" href="{{ url_for('goods_items') }}">
                             <i class="fas fa-shopping-bag"></i> Goods Items
                         </a>
                         <hr class="bg-light">
@@ -89,9 +89,9 @@
                 <div class="content-wrapper">
                     <nav class="navbar navbar-light bg-white px-4 shadow-sm">
                         <div class="container-fluid">
-                            <h5 class="mt-2">{% if collection %}Edit{% else %}Add New{% endif %} Service Collection</h5>
-                            <a href="{{ url_for('service_collections') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left"></i> Back to Collections
+                            <h5 class="mt-2">{% if item %}Edit{% else %}Add New{% endif %} Goods Item</h5>
+                            <a href="{{ url_for('goods_items') }}" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left"></i> Back to Items
                             </a>
                         </div>
                     </nav>
@@ -113,13 +113,45 @@
                                 <div class="row">
                                     <div class="col-md-8">
                                         <div class="mb-3">
-                                            <label for="name" class="form-label">Collection Name *</label>
-                                            <input type="text" class="form-control" id="name" name="name" value="{{ collection.name if collection else '' }}" required>
+                                            <label for="name" class="form-label">Item Name *</label>
+                                            <input type="text" class="form-control" id="name" name="name" value="{{ item.name if item else '' }}" required>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label for="category_id" class="form-label">Category *</label>
+                                            <select class="form-control" id="category_id" name="category_id" required>
+                                                <option value="">Select Category</option>
+                                                {% for category in categories %}
+                                                    <option value="{{ category.id }}" {% if item and item.category_id == category.id %}selected{% endif %}>
+                                                        {{ category.name }}
+                                                    </option>
+                                                {% endfor %}
+                                            </select>
+                                        </div>
+                                        
+                                        <div class="row">
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="price" class="form-label">Price (₹)</label>
+                                                    <input type="number" step="0.01" class="form-control" id="price" name="price" value="{{ item.price if item else 0 }}" required onchange="calculateFinal()">
+                                                </div>
+                                            </div>
+                                            <div class="col-md-6">
+                                                <div class="mb-3">
+                                                    <label for="discount" class="form-label">Discount (%)</label>
+                                                    <input type="number" step="0.01" class="form-control" id="discount" name="discount" value="{{ item.discount if item else 0 }}" onchange="calculateFinal()">
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="mb-3">
+                                            <label class="form-label">Final Price</label>
+                                            <input type="text" class="form-control" id="final_price_display" readonly style="background-color: #e9ecef; font-weight: bold; color: #28a745;">
                                         </div>
                                         
                                         <div class="mb-3">
                                             <label for="description" class="form-label">Description</label>
-                                            <textarea class="form-control" id="description" name="description" rows="4">{{ collection.description if collection else '' }}</textarea>
+                                            <textarea class="form-control" id="description" name="description" rows="4">{{ item.description if item else '' }}</textarea>
                                         </div>
                                         
                                         <div class="row">
@@ -127,16 +159,9 @@
                                                 <div class="mb-3">
                                                     <label for="status" class="form-label">Status</label>
                                                     <select class="form-control" id="status" name="status">
-                                                        <option value="active" {% if collection and collection.status == 'active' %}selected{% endif %}>Active</option>
-                                                        <option value="inactive" {% if collection and collection.status == 'inactive' %}selected{% endif %}>Inactive</option>
+                                                        <option value="active" {% if item and item.status == 'active' %}selected{% endif %}>Active</option>
+                                                        <option value="inactive" {% if item and item.status == 'inactive' %}selected{% endif %}>Inactive</option>
                                                     </select>
-                                                </div>
-                                            </div>
-                                            <div class="col-md-6">
-                                                <div class="mb-3">
-                                                    <label for="position" class="form-label">Position</label>
-                                                    <input type="number" class="form-control" id="position" name="position" value="{{ collection.position if collection else 0 }}">
-                                                    <small class="text-muted">0 = auto position</small>
                                                 </div>
                                             </div>
                                         </div>
@@ -144,10 +169,10 @@
                                     
                                     <div class="col-md-4">
                                         <div class="mb-3">
-                                            <label for="collection_photo" class="form-label">Collection Photo</label>
-                                            <input type="file" class="form-control" id="collection_photo" name="collection_photo" accept="image/*" onchange="previewImage(this)">
-                                            {% if collection and collection.collection_photo %}
-                                                <img id="preview" src="{{ collection.collection_photo }}" class="preview-img" alt="Preview">
+                                            <label for="photo" class="form-label">Item Photo</label>
+                                            <input type="file" class="form-control" id="photo" name="photo" accept="image/*" onchange="previewImage(this)">
+                                            {% if item and item.photo %}
+                                                <img id="preview" src="{{ item.photo }}" class="preview-img" alt="Preview">
                                             {% else %}
                                                 <img id="preview" class="preview-img" style="display: none;">
                                             {% endif %}
@@ -157,9 +182,9 @@
                                 
                                 <div class="mt-3">
                                     <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-save"></i> {% if collection %}Update{% else %}Save{% endif %} Collection
+                                        <i class="fas fa-save"></i> {% if item %}Update{% else %}Save{% endif %} Item
                                     </button>
-                                    <a href="{{ url_for('service_collections') }}" class="btn btn-secondary">Cancel</a>
+                                    <a href="{{ url_for('goods_items') }}" class="btn btn-secondary">Cancel</a>
                                 </div>
                             </form>
                         </div>
@@ -170,6 +195,13 @@
     </div>
     
     <script>
+        function calculateFinal() {
+            const price = parseFloat(document.getElementById('price').value) || 0;
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const finalPrice = price - (price * discount / 100);
+            document.getElementById('final_price_display').value = '₹' + finalPrice.toFixed(2);
+        }
+        
         function previewImage(input) {
             const preview = document.getElementById('preview');
             if (input.files && input.files[0]) {
@@ -180,6 +212,10 @@
                 }
                 reader.readAsDataURL(input.files[0]);
             }
+        }
+        
+        window.onload = function() {
+            calculateFinal();
         }
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
